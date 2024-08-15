@@ -5,10 +5,13 @@ import com.example.studentcrud.model.Student;
 import com.example.studentcrud.service.StudentService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/students")
@@ -60,11 +63,17 @@ public class StudentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteStudent(@PathVariable Long id) {
-        studentService.getStudentById(id)
-                .orElseThrow(() -> new StudentNotFoundException(id));
-        studentService.deleteStudent(id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, String>> deleteStudent(@PathVariable Long id) {
+        try {
+            studentService.deleteStudent(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Student deleted successfully.");
+            return ResponseEntity.ok(response);
+        } catch (StudentNotFoundException ex) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
     }
 }
 
